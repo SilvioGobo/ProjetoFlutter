@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'services/firestore_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,25 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthService())],
+      providers: [
+        //O Provider de Autenticação
+        ChangeNotifierProvider(create: (_) => AuthService()),
+
+        //o proxy provider out o AuthService 1 e depois cria o FireStoreService.
+        ProxyProvider<AuthService, FirestoreService?>(
+          // O 'create' é chamado uma vez
+          create: (context) => null,
+
+          //update é chamado toda vez que o AuthService mudar
+          update: (context, auth, previousService) {
+            // Se tiver um usuário logado (auth.usuario != null) ele cria o FirestoreService com uid
+            if (auth.usuario != null) {
+              return FirestoreService(uid: auth.usuario!.uid);
+            }
+            return null;
+          },
+        ),
+      ],
       child: const MyApp(),
     ),
   );
