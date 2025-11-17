@@ -57,6 +57,11 @@ class HistAbastecimentosScreen extends StatelessWidget {
                 final double p = item.valorPago / item.quantidadeLitros;
                 precoPorLitro = "(${currencyFormatter.format(p)}/L)";
               }
+              // km por litro
+              String mediaConsumo = "";
+              if (item.consumo != null && item.consumo! > 0) {
+                mediaConsumo = "${item.consumo!.toStringAsFixed(1)} Km/L";
+              }
 
               return ListTile(
                 leading: CircleAvatar(
@@ -78,38 +83,58 @@ class HistAbastecimentosScreen extends StatelessWidget {
                 subtitle: Text(
                   "${item.quantidadeLitros.toStringAsFixed(2)} L  $precoPorLitro\nEm: ${dateFormatter.format(item.data)} | ${item.quilometragem.toStringAsFixed(0)} Km",
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    // Confirmação antes de excluir
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text("Confirmar Exclusão"),
-                        content: const Text(
-                          "Tem certeza que deseja excluir este registro?",
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // A média (se houver)
+                    if (mediaConsumo.isNotEmpty)
+                      Text(
+                        mediaConsumo,
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
-                        actions: [
-                          TextButton(
-                            child: const Text("Cancelar"),
-                            onPressed: () => Navigator.of(ctx).pop(),
-                          ),
-                          TextButton(
-                            child: const Text("Excluir"),
-                            onPressed: () {
-                              firestoreService.deleteAbastecimento(item.id!);
-                              Navigator.of(ctx).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Registro excluído."),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
                       ),
-                    );
-                  },
+                    // O botão de deletar se n houver media
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () {
+                        // Confirmação antes de excluir
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text("Confirmar Exclusão"),
+                            content: const Text(
+                              "Tem certeza que deseja excluir este registro?",
+                            ),
+                            actions: [
+                              TextButton(
+                                child: const Text("Cancelar"),
+                                onPressed: () => Navigator.of(ctx).pop(),
+                              ),
+                              TextButton(
+                                child: const Text("Excluir"),
+                                onPressed: () {
+                                  firestoreService.deleteAbastecimento(
+                                    item.id!,
+                                  );
+                                  Navigator.of(ctx).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Registro excluído."),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 isThreeLine: true,
               );
