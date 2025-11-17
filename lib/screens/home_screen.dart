@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'veiculos_list_screen.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import 'add_abastecimento_screen.dart';
+import 'hist_abastecimentos_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -50,9 +52,10 @@ class HomeScreen extends StatelessWidget {
               title: const Text("Registrar Abastecimento"),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Tela de Abastecimento (em breve!)"),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddAbastecimentoScreen(),
                   ),
                 );
               },
@@ -62,9 +65,10 @@ class HomeScreen extends StatelessWidget {
               title: const Text("Histórico de Abastecimentos"),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Tela de Histórico (em breve!)"),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HistAbastecimentosScreen(),
                   ),
                 );
               },

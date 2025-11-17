@@ -1,7 +1,7 @@
 class Veiculo {
   // Id do doc no firestore
-  final String? id; 
-  
+  final String? id;
+
   final String modelo;
   final String marca;
   final String placa;
@@ -41,4 +41,15 @@ class Veiculo {
       tipoCombustivel: map['tipoCombustivel'] ?? '',
     );
   }
+
+  //Sobrecarga usada a seguir: Usado pq deu um bug na hora de cadastrar abastecimento. O objeto não consegue se comparar corretamente quando pega o veiculo no abastecimento.
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Veiculo && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
