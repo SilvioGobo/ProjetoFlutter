@@ -80,13 +80,39 @@ class _AddAbastecimentoScreenState extends State<AddAbastecimentoScreen> {
         listen: false,
       );
 
-      // --- LÓGICA DO COMBUSTÍVEL ATUALIZADA ---
       // Se for Flex, usa o que o usuário selecionou.
       // Se não, usa o combustível padrão do veículo.
       final String combustivelFinal = _mostrarOpcaoFlex
           ? _combustivelUsado!
           : _veiculoSelecionado!.tipoCombustivel;
-      // -----------------------------------------
+
+      //Lógica do calculo da media km/litro
+
+      // Pegar os valores atuais do formulário
+      final double kmAtual = double.parse(
+        _kmController.text.replaceAll(',', '.'),
+      );
+      final double litros = double.parse(
+        _litrosController.text.replaceAll(',', '.'),
+      );
+
+      // Busca o último abastecimento deste veículo
+      final Abastecimento? ultimoAbastecimento = await firestoreService
+          .getUltimoAbastecimento(_veiculoSelecionado!.id!);
+
+      double? consumoCalculado;
+
+      if (ultimoAbastecimento != null) {
+        // km atual maior que o anterior ele calcula a media
+        if (kmAtual > ultimoAbastecimento.quilometragem) {
+          final double kmRodados = kmAtual - ultimoAbastecimento.quilometragem;
+          if (litros > 0) {
+            consumoCalculado = kmRodados / litros;
+          }
+        }
+        // Se a KM atual for menor continua nulo
+      }
+      // Se for o primeiro abastecimento é nulo tbm
 
       // Cria o objeto Abastecimento
       final novoAbastecimento = Abastecimento(
@@ -94,12 +120,11 @@ class _AddAbastecimentoScreenState extends State<AddAbastecimentoScreen> {
         tipoCombustivel:
             combustivelFinal, // Pega do veículo (feature flex nova add)
         data: _dataSelecionada!,
-        quilometragem: double.parse(_kmController.text.replaceAll(',', '.')),
-        quantidadeLitros: double.parse(
-          _litrosController.text.replaceAll(',', '.'),
-        ),
+        quilometragem: kmAtual, //att para km/l
+        quantidadeLitros: litros, //att para km/l
         valorPago: double.parse(_valorController.text.replaceAll(',', '.')),
         observacao: _obsController.text.isEmpty ? null : _obsController.text,
+        consumo: consumoCalculado, //salva o calculo.
       );
 
       // Salvar no Firebase

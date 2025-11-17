@@ -11,13 +11,17 @@ class FirestoreService {
 
   // Ex: caminho padrão para cada user
   CollectionReference<Veiculo> get _veiculosCollection {
-    return _db.collection('users').doc(uid).collection('veiculos')
-      .withConverter<Veiculo>(
-        // Converte o Map do Firestore para o objeto Veiculo
-        fromFirestore: (snapshots, _) => Veiculo.fromMap(snapshots.data()!, snapshots.id),
-        // Converte o objeto Veiculo para o Map do Firestore
-        toFirestore: (veiculo, _) => veiculo.toMap(),
-      );
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('veiculos')
+        .withConverter<Veiculo>(
+          // Converte o Map do Firestore para o objeto Veiculo
+          fromFirestore: (snapshots, _) =>
+              Veiculo.fromMap(snapshots.data()!, snapshots.id),
+          // Converte o objeto Veiculo para o Map do Firestore
+          toFirestore: (veiculo, _) => veiculo.toMap(),
+        );
   }
 
   //CRUD VEICULO
@@ -41,20 +45,25 @@ class FirestoreService {
   }
 
   //CRUD Abastecimentos
-    CollectionReference<Abastecimento> get _abastecimentosCollection {
-    return _db.collection('users').doc(uid).collection('abastecimentos')
-      .withConverter<Abastecimento>(
-        // Converte o Map do Firestore para o objeto Abastecimento
-        fromFirestore: (snapshots, _) => Abastecimento.fromMap(snapshots.data()!, snapshots.id),
-        // Converte o objeto Abastecimento para o Map do Firestore
-        toFirestore: (abastecimento, _) => abastecimento.toMap(),
-      );
+  CollectionReference<Abastecimento> get _abastecimentosCollection {
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('abastecimentos')
+        .withConverter<Abastecimento>(
+          // Converte o Map do Firestore para o objeto Abastecimento
+          fromFirestore: (snapshots, _) =>
+              Abastecimento.fromMap(snapshots.data()!, snapshots.id),
+          // Converte o objeto Abastecimento para o Map do Firestore
+          toFirestore: (abastecimento, _) => abastecimento.toMap(),
+        );
   }
-    // Read
-    Stream<List<Abastecimento>> getAbastecimentosStream() {
+
+  // Read
+  Stream<List<Abastecimento>> getAbastecimentosStream() {
     //Mais novo para o mais antigo
     final query = _abastecimentosCollection.orderBy('data', descending: true);
-    
+
     //ve as mudanças em tempo real
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => doc.data()).toList();
@@ -69,5 +78,25 @@ class FirestoreService {
   //delete
   Future<void> deleteAbastecimento(String abastecimentoId) async {
     await _abastecimentosCollection.doc(abastecimentoId).delete();
+  }
+
+  //Calculo de consumo médio do veiculo
+  //km/litro
+
+  // Busca o último abastecimento de um veículo (o com a maior KM)
+  Future<Abastecimento?> getUltimoAbastecimento(String veiculoId) async {
+    final query = _abastecimentosCollection
+        .where('veiculoId', isEqualTo: veiculoId)
+        // Ordena pela KM, da maior para a menor
+        .orderBy('quilometragem', descending: true)
+        // Pega o mais recente
+        .limit(1);
+
+    final snapshot = await query.get();
+    // Se encontra retorna o obj
+    if (snapshot.docs.isNotEmpty) {
+      return snapshot.docs.first.data();
+    }
+    return null;
   }
 }
