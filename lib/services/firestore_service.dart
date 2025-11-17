@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/veiculo.dart';
+import '../models/abastecimento.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -19,11 +20,11 @@ class FirestoreService {
       );
   }
 
-  //CRUD
+  //CRUD VEICULO
 
   //read
   Stream<List<Veiculo>> getVeiculosStream() {
-    // .snapshots() ouve todas as mudanças em tempo real
+    // pega as mudanças em tempo real
     return _veiculosCollection.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => doc.data()).toList();
     });
@@ -37,5 +38,36 @@ class FirestoreService {
   //delete
   Future<void> deleteVeiculo(String veiculoId) async {
     await _veiculosCollection.doc(veiculoId).delete();
+  }
+
+  //CRUD Abastecimentos
+    CollectionReference<Abastecimento> get _abastecimentosCollection {
+    return _db.collection('users').doc(uid).collection('abastecimentos')
+      .withConverter<Abastecimento>(
+        // Converte o Map do Firestore para o objeto Abastecimento
+        fromFirestore: (snapshots, _) => Abastecimento.fromMap(snapshots.data()!, snapshots.id),
+        // Converte o objeto Abastecimento para o Map do Firestore
+        toFirestore: (abastecimento, _) => abastecimento.toMap(),
+      );
+  }
+    // Read
+    Stream<List<Abastecimento>> getAbastecimentosStream() {
+    //Mais novo para o mais antigo
+    final query = _abastecimentosCollection.orderBy('data', descending: true);
+    
+    //ve as mudanças em tempo real
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  //create
+  Future<void> addAbastecimento(Abastecimento abastecimento) async {
+    await _abastecimentosCollection.add(abastecimento);
+  }
+
+  //delete
+  Future<void> deleteAbastecimento(String abastecimentoId) async {
+    await _abastecimentosCollection.doc(abastecimentoId).delete();
   }
 }
