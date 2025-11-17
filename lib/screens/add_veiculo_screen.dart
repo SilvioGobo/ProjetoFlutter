@@ -20,7 +20,7 @@ class _AddVeiculoScreenState extends State<AddVeiculoScreen> {
   final _anoController = TextEditingController();
 
   String? _combustivelSelecionado;
-  final List<String> _opcoesCombustivel = ['Álcool', 'Gasolina', 'Diesel'];
+  final List<String> _opcoesCombustivel = ['Álcool', 'Gasolina', 'Diesel', 'Flex (Gas/Álcool)'];
 
   bool _isLoading = false;
 
